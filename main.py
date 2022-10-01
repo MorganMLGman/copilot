@@ -1,0 +1,10 @@
+import logging
+import logging.config
+import commands
+
+def main():
+    logging.config.fileConfig(fname='log.conf', disable_existing_loggers=True)
+    logger = logging.getLogger('copilotLogger')
+
+if __name__ == "__main__":
+    main()
