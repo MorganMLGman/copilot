@@ -105,29 +105,49 @@ def get_ram_stats() -> tuple[float, float, float, float]:
     return ret
 
 def get_swap_total() -> float:
+    """get_swap_total Function to get total swap size
+
+    Returns:
+        float: Swap total size
+    """
     ret = round(psutil.swap_memory().total / (2 ** 30), 3)
     logger.debug("Total swap: %s GiB", ret)
     return ret
 
 def get_swap_used() -> float:
+    """get_swap_used Function to get used swap size
+
+    Returns:
+        float: Used swap size
+    """
     ret = round(psutil.swap_memory().used / (2 ** 30), 3)
     logger.debug("Used swap: %s GiB", ret)
     return ret
 
 def get_swap_available() -> float:
+    """get_swap_available Function to get available swap size
+
+    Returns:
+        float: Available swap size
+    """
     ret = round(psutil.swap_memory().free / (2 ** 30), 3)
     logger.debug("Available swap: %s GiB", ret)
     return ret
 
 def get_swap_stats() -> tuple[float, float, float, float]:
+    """get_swap_stats Function to get swap statistics
+
+    Returns:
+        tuple[float, float, float, float]: Swap statistics, [total, used, available, percent]
+    """
     swap =      psutil.swap_memory()
     total =     round(swap.total / (2 ** 30), 3)
     used =      round(swap.used / (2 ** 30), 3)
     available = round(swap.free / (2 ** 30), 3)
     percent =   swap.percent
-    
+
     ret = (total, used, available, percent)
-    
+
     logger.debug("Swap stats: %s", ret)
 
     return ret
