@@ -47,3 +47,6 @@ def get_uptime(since: bool) -> str:
     if since:
         return dt.datetime.fromtimestamp(boot_time).strftime("%d/%m/%Y %H:%M:%S")
     return dt.timedelta(seconds=time() - boot_time)
+
+def get_ram_total() -> float:
+    return round(psutil.virtual_memory().total / (2 ** 30), 3)
