@@ -6,7 +6,8 @@ def main():
     logging.config.fileConfig(fname='log.conf', disable_existing_loggers=True)
     logger = logging.getLogger('copilotLogger')
     
-    print(commands.get_ram_total())
+    commands.get_swap_stats()
+    
 
 if __name__ == "__main__":
     main()
