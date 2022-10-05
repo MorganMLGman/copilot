@@ -151,3 +151,93 @@ def get_swap_stats() -> tuple[float, float, float, float]:
     logger.debug("Swap stats: %s", ret)
 
     return ret
+
+def get_cpu_cores() -> int:
+    """get_cpu_cores Function to get cpu physical core count
+
+    Returns:
+        int: cpu physical core count
+    """
+    ret = psutil.cpu_count(logical=False)
+
+    logger.debug("CPU core count: %s", ret)
+
+    return ret
+
+def get_cpu_threads() -> int:
+    """get_cpu_threads Function to get cpu logical core count
+
+    Returns:
+        int: cpu logical core count
+    """
+    ret = psutil.cpu_count(logical=True)
+
+    logger.debug("CPU threads: %s", ret)
+
+    return ret
+
+def get_cpu_max_freq() -> float:
+    """get_cpu_max_freq Function to get cpu max frequency
+
+    Returns:
+        float: cpu max frequency in MHz
+    """
+    ret = psutil.cpu_freq().max
+
+    logger.debug("CPU max freq: %s MHz", ret)
+
+    return ret
+
+def get_cpu_min_freq() -> float:
+    """get_cpu_min_freq Function to get cpu min frequency
+
+    Returns:
+        float: cpu min frequency
+    """
+    ret = psutil.cpu_freq().min
+
+    logger.debug("CPU min freq: %s MHz", ret)
+
+    return ret
+
+def get_cpu_freq(percore: bool) -> list:
+    """get_cpu_freq Function to get cpu current freqency
+
+    Args:
+        percore (bool): Get current freqency per cpu core
+
+    Returns:
+        list: list of cpu frequency, one item or more if percpu is set
+    """
+    ret = []
+
+    if percore:
+        for core in psutil.cpu_freq(percpu=True):
+            ret.append(core.current)
+    else:
+        ret = psutil.cpu_freq(percpu=False).current
+
+    logger.debug("CPU freq: %s MHz", ret)
+
+    return ret
+
+def get_system_load(percent: bool) -> tuple[float, float, float]:
+    """get_system_load Function to get system average load over 1 minute, 5 minutes and 15 minutes
+
+    Args:
+        percent (bool): Get system load as percent
+
+    Returns:
+        tuple[float, float, float]: system load
+    """
+    ret = ()
+    load = psutil.getloadavg()
+
+    if percent:
+        ret = tuple(round(x / psutil.cpu_count() * 100, 3) for x in load)
+    else:
+        ret = tuple(round(x, 3) for x in load)
+
+    logger.debug("System load: %s", ret)
+
+    return ret
