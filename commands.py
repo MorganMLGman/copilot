@@ -1,5 +1,6 @@
 """ Basic commands for operation
 """
+from audioop import avg
 import logging
 import logging.config
 from time import time
@@ -241,3 +242,44 @@ def get_system_load(percent: bool) -> tuple[float, float, float]:
     logger.debug("System load: %s", ret)
 
     return ret
+
+def get_cpu_temp(percore: bool) -> list:
+    """get_cpu_temp Function to get CPU temperature
+
+    Args:
+        percore (bool): Read cpu temperature per core
+
+    Returns:
+        list: cpu temperature list, consist of pairs (str, float)
+    """
+    ret = []
+    package_temp = []
+    core_temp = []
+    out = psutil.sensors_temperatures()    
+    keys = out.keys()
+    
+    for key in keys:
+        if (key.lower().find("cpu") != -1) or (key.lower().find("core") != -1):
+            break
+
+    for sensor in out[key]:
+        if sensor.label.lower().find("package") != -1:
+            package_temp.append((sensor.label, sensor.current))
+        
+        elif sensor.label.lower().find("core") != -1:
+            core_temp.append((sensor.label, sensor.current))
+    
+    if percore:
+        ret = package_temp + core_temp
+    else:
+        package_temp_avr = sum(x[1] for x in package_temp) / len(package_temp)
+        
+        core_temp_avr = sum(x[1] for x in core_temp) / len(core_temp)
+        
+        ret.append(("Package temp AVG", package_temp_avr))
+        ret.append(("CPU temp AVG", core_temp_avr))
+        
+    logger.debug("CPU temp: %s", ret)
+    
+    return ret
+    
