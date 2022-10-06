@@ -1,6 +1,5 @@
 """ Basic commands for operation
 """
-from audioop import avg
 import logging
 import logging.config
 from time import time
@@ -282,4 +281,37 @@ def get_cpu_temp(percore: bool) -> list:
     logger.debug("CPU temp: %s", ret)
     
     return ret
+    
+def get_temp_sensors() -> list:
+    ret = []
+    out = psutil.sensors_temperatures()
+    keys = out.keys()
+    
+    for key in keys:
+        if len(out[key]) > 1:
+            ret.append((key, len(out[key])))
+            
+        else:
+            ret.append((key, 1))
+            
+    logger.debug("Available temp sensors: %s", ret)
+    
+    return ret
+    
+def get_temp_by_sensor(sensor: str) -> list:
+    ret = []
+    out = psutil.sensors_temperatures()
+    keys = out.keys()
+    
+    if sensor in keys:
+        probes = out[sensor]
+        
+        for probe in probes:
+            ret.append((probe.label, probe.current))
+            
+        logger.debug("%s probes: %s", sensor, ret)
+        return ret
+    
+    logger.error("Sensor: %s is not available", sensor)
+    return None        
     
