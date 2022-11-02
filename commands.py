@@ -5,6 +5,8 @@ import logging.config
 from time import time
 import datetime as dt
 import psutil
+from shlex import split as xsplit
+import subprocess as sproc
 
 logging.config.fileConfig(fname='log.conf', disable_existing_loggers=False)
 logger = logging.getLogger('copilotLogger')
@@ -283,6 +285,11 @@ def get_cpu_temp(percore: bool) -> list:
     return ret
     
 def get_temp_sensors() -> list:
+    """get_temp_sensors Function to get all available temeprature sensors in system
+
+    Returns:
+        list: list of sensors
+    """
     ret = []
     out = psutil.sensors_temperatures()
     keys = out.keys()
@@ -299,6 +306,14 @@ def get_temp_sensors() -> list:
     return ret
     
 def get_temp_by_sensor(sensor: str) -> list:
+    """get_temp_by_sensor Function to read temperature by specific sensor
+
+    Args:
+        sensor (str): sensor name
+
+    Returns:
+        list: temperature values
+    """
     ret = []
     out = psutil.sensors_temperatures()
     keys = out.keys()
@@ -315,3 +330,126 @@ def get_temp_by_sensor(sensor: str) -> list:
     logger.error("Sensor: %s is not available", sensor)
     return None        
     
+
+def get_available_updates() -> list:
+    """get_available_updates Function to check available updates on server
+
+    Returns:
+        list: list containing available packets updates
+    """
+    ret = []
+    command = xsplit("sudo apt update")
+
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+
+
+    command = xsplit("sudo apt list --upgradable")
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break    
+
+    for line in proc.stdout.readlines()[1::]:
+        line_split = line.strip().split(" ")
+        ret.append(line_split[0] + ": " + line_split[-1][0:-1:] + " -> " + line_split[1])
+        
+    if ret is not None:
+        logger.debug("Update list gennerated")
+        logger.debug("Update list: %s" % ret)
+        return ret
+    else:
+        logger.error("Update list not generated")
+        return None
+
+def execute_system_reboot() -> None:
+    """execute_system_reboot Funtion to execute full system reboot
+    """
+    confirmation = str(input("Are you shure that you want to reboot the server?\nType: \"yes\" or \"no\": "))
+    
+    if confirmation is not None and confirmation.lower() == "yes":
+        logger.debug("Get ready for a reboot :)")
+        
+        command = xsplit("sudo reboot now")
+        # proc = sproc.run(command)
+        
+    else:
+        logger.debug("No reboot this time, just a warning :)")
+        
+def execute_system_shutdown() -> None:
+    """execute_system_shutdown Function to execute full system shutdown
+    """
+    confirmation = str(input("Are you shure that you want to shutdown the server?\nType: \"yes\" or \"no\": "))
+    
+    if confirmation is not None and confirmation.lower() == "yes":
+        logger.debug("Get ready for a shutdown :)")
+        
+        command = xsplit("sudo shutdown now")
+        # proc = sproc.run(command)
+        
+    else:
+        logger.debug("No shutdown this time, just a warning :)")
+    
+def get_public_ip() -> str:
+    """get_public_ip Function to get public IP
+
+    Returns:
+        str: public ipv4
+    """
+    
+    command = xsplit("curl ifconfig.me")
+    
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break 
+        
+    logger.debug("Public IP: %s" % proc.stdout.readline().strip())    
+    return proc.stdout.readline().strip()
