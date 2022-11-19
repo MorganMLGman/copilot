@@ -7,8 +7,9 @@ import datetime as dt
 import psutil
 from shlex import split as xsplit
 import subprocess as sproc
+from io import StringIO
 
-logging.config.fileConfig(fname='log.conf', disable_existing_loggers=False)
+logging.config.fileConfig(fname='/home/morgan/copilot/log.conf', disable_existing_loggers=False)
 logger = logging.getLogger('copilotLogger')
 
 def get_date() -> dt.datetime:
@@ -203,10 +204,10 @@ def get_cpu_min_freq() -> float:
     return ret
 
 def get_cpu_freq(percore: bool) -> list:
-    """get_cpu_freq Function to get cpu current freqency
+    """get_cpu_freq Function to get cpu current frequency
 
     Args:
-        percore (bool): Get current freqency per cpu core
+        percore (bool): Get current frequency per cpu core
 
     Returns:
         list: list of cpu frequency, one item or more if percpu is set
@@ -223,7 +224,7 @@ def get_cpu_freq(percore: bool) -> list:
 
     return ret
 
-def get_system_load(percent: bool) -> tuple[float, float, float]:
+def get_system_load(percent: bool = False) -> tuple[float, float, float]:
     """get_system_load Function to get system average load over 1 minute, 5 minutes and 15 minutes
 
     Args:
@@ -244,7 +245,7 @@ def get_system_load(percent: bool) -> tuple[float, float, float]:
 
     return ret
 
-def get_cpu_temp(percore: bool) -> list:
+def get_cpu_temp(percore: bool = False) -> list:
     """get_cpu_temp Function to get CPU temperature
 
     Args:
@@ -451,5 +452,35 @@ def get_public_ip() -> str:
             logger.debug("Command %s ended with success" % command)
             break 
         
-    logger.debug("Public IP: %s" % proc.stdout.readline().strip())    
+    #logger.debug("Public IP: %s" % proc.stdout.readline().strip())    
     return proc.stdout.readline().strip()
+
+def get_first_proc_by_cpu() -> str:
+    """get_first_proc_by_cpu Function to get most cpu demanding process
+
+    Returns:
+        str: process name
+    """
+    
+    command = xsplit("top -b -n 1")
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+    
+    return proc.stdout.readlines()[7].split()[-1]
