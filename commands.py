@@ -9,7 +9,7 @@ from shlex import split as xsplit
 import subprocess as sproc
 from io import StringIO
 
-logging.config.fileConfig(fname='/home/morgan/copilot/log.conf', disable_existing_loggers=False)
+logging.config.fileConfig(fname='~/copilot/log.conf', disable_existing_loggers=False)
 logger = logging.getLogger('copilotLogger')
 
 def get_date() -> dt.datetime:
