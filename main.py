@@ -6,7 +6,7 @@ import json
 import argparse
 
 def main():
-    logging.config.fileConfig(fname='~/copilot/log.conf', disable_existing_loggers=True)
+    # logging.config.fileConfig(fname='~/copilot/log.conf', disable_existing_loggers=True)
     logger = logging.getLogger('copilotLogger')
     
     parser = argparse.ArgumentParser(description="This is simple command line python script to help you manage your server")
