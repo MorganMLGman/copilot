@@ -281,12 +281,13 @@ def get_cpu_temp(percore: bool = False) -> list:
     if percore:
         ret = package_temp + core_temp
     else:
-        package_temp_avr = sum(x[1] for x in package_temp) / len(package_temp)
-        
-        core_temp_avr = sum(x[1] for x in core_temp) / len(core_temp)
-        
-        ret.append(("Package temp AVG", package_temp_avr))
-        ret.append(("CPU temp AVG", core_temp_avr))
+        if package_temp:
+            package_temp_avr = sum(x[1] for x in package_temp) / len(package_temp)
+            ret.append(("Package temp AVG", package_temp_avr))
+            
+        if core_temp:
+            core_temp_avr = sum(x[1] for x in core_temp) / len(core_temp)
+            ret.append(("CPU temp AVG", core_temp_avr))
         
     logger.debug("CPU temp: %s", ret)
     
