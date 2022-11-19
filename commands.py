@@ -275,7 +275,7 @@ def get_cpu_temp(percore: bool = False) -> list:
         if sensor.label.lower().find("package") != -1:
             package_temp.append((sensor.label, sensor.current))
         
-        elif sensor.label.lower().find("core") != -1:
+        elif sensor.label.lower().find("core") != -1 or sensor.label.lower().find("temp1") != -1:
             core_temp.append((sensor.label, sensor.current))
     
     if percore:
@@ -587,7 +587,12 @@ def refresh_dashboard() -> dict:
         
     ret = dict()
     
-    cpu_temp = get_cpu_temp(False)[1][1]    
+    cpu_temp = 0    
+    for temp in get_cpu_temp(False):
+        if temp[0] == "CPU temp AVG":
+            cpu_temp = temp[1]
+            break
+       
     ret["cpu_temp"] = str(f"{cpu_temp} 'C")
     
     ret["cpu_usage"] = str(f"{psutil.cpu_percent(interval = 1)}%")
