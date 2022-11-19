@@ -54,7 +54,7 @@ def get_uptime(since: bool) -> str:
 
     if since:
         ret = dt.datetime.fromtimestamp(boot_time).strftime("%d/%m/%Y %H:%M:%S")
-    ret = str(dt.timedelta(seconds=time() - boot_time))
+    ret = str(dt.timedelta(seconds=time() - boot_time)).split(".")[0]
 
     logger.debug(ret)
     return ret
@@ -221,6 +221,13 @@ def get_cpu_freq(percore: bool) -> list:
         ret = psutil.cpu_freq(percpu=False).current
 
     logger.debug("CPU freq: %s MHz", ret)
+
+    return ret
+
+def get_cpu_usage() -> float:
+    ret = psutil.cpu_percent(interval = 1)
+
+    logger.debug("CPU usage: %s %", ret)
 
     return ret
 
@@ -455,6 +462,38 @@ def get_public_ip() -> str:
     #logger.debug("Public IP: %s" % proc.stdout.readline().strip())    
     return proc.stdout.readline().strip()
 
+def get_local_ip() -> str:
+    """get_public_ip Function to get public IP
+
+    Returns:
+        str: public ipv4
+    """
+    
+    command = xsplit("hostname -I")
+    
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break 
+        
+    #logger.debug("Public IP: %s" % proc.stdout.readline().strip())    
+    return proc.stdout.readline().strip().split()[0]
+
 def get_first_proc_by_cpu() -> str:
     """get_first_proc_by_cpu Function to get most cpu demanding process
 
@@ -484,3 +523,88 @@ def get_first_proc_by_cpu() -> str:
             break
     
     return proc.stdout.readlines()[7].split()[-1]
+
+def get_kernel_version() ->str:
+    command = xsplit("uname -r")
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+        
+    return proc.stdout.readline().strip()
+
+
+def get_hostname() ->str:
+    command = xsplit("hostname")
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+        
+    return proc.stdout.readline().strip()
+    
+def refresh_dashboard() -> dict:
+    
+    # CPU temp
+    # CPU usage
+    # RAM usage
+    # Kernel version
+    # Hostname
+    # Uptime
+    # Public IP
+    # Local IP
+        
+    ret = dict()
+    
+    cpu_temp = get_cpu_temp(False)[1][1]    
+    ret["cpu_temp"] = str(f"{cpu_temp} 'C")
+    
+    ret["cpu_usage"] = str(f"{psutil.cpu_percent(interval = 1)}%")
+    
+    ret["ram_usage"] = str(f"{psutil.virtual_memory().percent}%")
+    
+    ret['kernel'] = get_kernel_version()
+    
+    ret["hostname"] = get_hostname()
+    
+    ret["uptime"] = get_uptime(False)
+    
+    ret["public_ip"] = get_public_ip()
+    
+    ret["local_ip"] = get_local_ip()
+    
+    return ret
+        
+        
+        
+        

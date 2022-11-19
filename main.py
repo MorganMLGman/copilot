@@ -11,6 +11,8 @@ def main():
     
     parser = argparse.ArgumentParser(description="This is simple command line python script to help you manage your server")
     
+    parser.add_argument("--dash", help="Show basic server statistics", action="store_true")
+    
     subparsers = parser.add_subparsers()
     
     sub_cpu = subparsers.add_parser('cpu', help="Commands related to CPU")
@@ -31,7 +33,9 @@ def main():
     
     ret = None
     
-    if args.command == "cores":
+    if args.dash:
+        ret = commands.refresh_dashboard()
+    elif args.command == "cores":
         ret = commands.get_cpu_cores()
     elif args.command == "threads":
         ret = commands.get_cpu_threads()
