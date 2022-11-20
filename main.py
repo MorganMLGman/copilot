@@ -1,12 +1,14 @@
 import logging
 import logging.config
+from os import path
 import commands
 import json
 
 import argparse
 
 def main():
-    # logging.config.fileConfig(fname='~/copilot/log.conf', disable_existing_loggers=True)
+    log_file_path = path.join(path.dirname(path.abspath(__file__)), 'log.conf')
+    logging.config.fileConfig(log_file_path, disable_existing_loggers=True)
     logger = logging.getLogger('copilotLogger')
     
     parser = argparse.ArgumentParser(description="This is simple command line python script to help you manage your server")

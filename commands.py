@@ -2,6 +2,7 @@
 """
 import logging
 import logging.config
+from os import path
 from time import time
 import datetime as dt
 import psutil
@@ -9,7 +10,8 @@ from shlex import split as xsplit
 import subprocess as sproc
 from io import StringIO
 
-# logging.config.fileConfig(fname='~/copilot/log.conf', disable_existing_loggers=False)
+log_file_path = path.join(path.dirname(path.abspath(__file__)), 'log.conf')
+logging.config.fileConfig(log_file_path, disable_existing_loggers=True)
 logger = logging.getLogger('copilotLogger')
 
 def get_date() -> dt.datetime:
@@ -573,6 +575,9 @@ def get_hostname() ->str:
             break
         
     return proc.stdout.readline().strip()
+
+def get_disk_usage(path: str) -> dict:
+    pass
     
 def refresh_dashboard() -> dict:
     
