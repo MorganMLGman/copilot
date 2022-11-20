@@ -256,7 +256,7 @@ def get_system_load(percent: bool = False) -> tuple[float, float, float]:
 
     return ret
 
-def get_cpu_temp(percore: bool = False) -> list:
+def get_cpu_temp(percore: bool = False) -> dict:
     """get_cpu_temp Function to get CPU temperature
 
     Args:
@@ -265,33 +265,43 @@ def get_cpu_temp(percore: bool = False) -> list:
     Returns:
         list: cpu temperature list, consist of pairs (str, float)
     """
-    ret = []
+    ret = dict()
     package_temp = []
     core_temp = []
     out = psutil.sensors_temperatures()    
     keys = out.keys()
     
     for key in keys:
-        if (key.lower().find("cpu") != -1) or (key.lower().find("core") != -1):
+        if (key.lower().find("cpu") != -1) or (key.lower().find("core") != -1) or (key.lower().find("cpu_thermal") != -1):
             break
 
     for sensor in out[key]:
         if sensor.label.lower().find("package") != -1:
-            package_temp.append((sensor.label, sensor.current))
+            package_temp.append(sensor.current)
         
-        elif sensor.label.lower().find("core") != -1 or sensor.label.lower().find("temp1") != -1:
-            core_temp.append((sensor.label, sensor.current))
-    
+        elif sensor.label.lower().find("core") != -1:
+            core_temp.append(sensor.current)
+            
+
+    if len(package_temp) == 0 and len(core_temp) == 0:
+        for sensor in out[key]:
+            core_temp.append(sensor.current)
+
     if percore:
-        ret = package_temp + core_temp
+        if len(package_temp) > 0:
+            ret["package"] = package_temp
+            
+        if len(core_temp) > 0:
+            ret["core"] = core_temp
+        
     else:
         if package_temp:
-            package_temp_avr = sum(x[1] for x in package_temp) / len(package_temp)
-            ret.append(("Package temp AVG", package_temp_avr))
+            package_temp_avr = sum(x for x in package_temp) / len(package_temp)
+            ret["package"] =  package_temp_avr
             
         if core_temp:
-            core_temp_avr = sum(x[1] for x in core_temp) / len(core_temp)
-            ret.append(("CPU temp AVG", core_temp_avr))
+            core_temp_avr = sum(x for x in core_temp) / len(core_temp)
+            ret["core"] = core_temp_avr
         
     logger.debug("CPU temp: %s", ret)
     
@@ -696,13 +706,8 @@ def refresh_dashboard() -> dict:
         
     ret = dict()
     
-    cpu_temp = 0    
-    for temp in get_cpu_temp(False):
-        if temp[0] == "CPU temp AVG":
-            cpu_temp = temp[1]
-            break
        
-    ret["cpu_temp"] = str(f"{cpu_temp} 'C")
+    ret["cpu_temp"] = str(f"""{get_cpu_temp(False)["core"]} 'C""")
     
     ret["cpu_usage"] = str(f"{psutil.cpu_percent(interval = 1)}%")
     
