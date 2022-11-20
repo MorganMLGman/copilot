@@ -277,15 +277,15 @@ def get_cpu_temp(percore: bool = False) -> dict:
 
     for sensor in out[key]:
         if sensor.label.lower().find("package") != -1:
-            package_temp.append(sensor.current)
+            package_temp.append(round(sensor.current, 1))
         
         elif sensor.label.lower().find("core") != -1:
-            core_temp.append(sensor.current)
+            core_temp.append(round(sensor.current, 1))
             
 
     if len(package_temp) == 0 and len(core_temp) == 0:
         for sensor in out[key]:
-            core_temp.append(sensor.current)
+            core_temp.append(round(sensor.current, 1))
 
     if percore:
         if len(package_temp) > 0:
@@ -297,11 +297,11 @@ def get_cpu_temp(percore: bool = False) -> dict:
     else:
         if package_temp:
             package_temp_avr = sum(x for x in package_temp) / len(package_temp)
-            ret["package"] =  package_temp_avr
+            ret["package"] =  round(package_temp_avr, 1)
             
         if core_temp:
             core_temp_avr = sum(x for x in core_temp) / len(core_temp)
-            ret["core"] = core_temp_avr
+            ret["core"] = round(core_temp_avr, 1)
         
     logger.debug("CPU temp: %s", ret)
     
