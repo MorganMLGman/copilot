@@ -569,7 +569,7 @@ def get_first_proc_by_cpu() -> str:
         for name in names:
             index = out[0].find(name)
             if index != -1 and len(out[1]) > index:
-                ret = out[1].strip()[index::]  
+                ret = out[1].strip()[index - 1::]  
     
     return ret
 
@@ -671,7 +671,10 @@ def get_disk_name(mountpoint: str) -> str:
             for children in device["children"]:
                 if type(children) is dict:
                     if children["mountpoint"] == mountpoint:
-                        ret = device["model"]
+                        if children["model"]:
+                            ret = device["model"]
+                        else:
+                            ret = device["name"]
                         break
         
         if ret != "":
