@@ -2,13 +2,15 @@
 """
 import logging
 import logging.config
+from os.path import exists as os_exists
 from os import path
 from time import time
 import datetime as dt
 import psutil
+from psutil._common import bytes2human
 from shlex import split as xsplit
 import subprocess as sproc
-from io import StringIO
+import json
 
 log_file_path = path.join(path.dirname(path.abspath(__file__)), 'log.conf')
 logging.config.fileConfig(log_file_path, disable_existing_loggers=True)
@@ -503,29 +505,73 @@ def get_first_proc_by_cpu() -> str:
     Returns:
         str: process name
     """
-    
+    ret = ""
     command = xsplit("top -b -n 1")
-    proc = sproc.Popen( command,
+    proc_top = sproc.Popen( command,
                         stdin=sproc.PIPE,
                         stdout=sproc.PIPE,
                         stderr=sproc.PIPE,
                         encoding="utf-8",)
 
     while True:
-        return_code = proc.poll()
-
+        return_code = proc_top.poll()
         if return_code is None:
             continue
-
         if return_code == 1:
             logger.error("Command %s not ended successfully" % command)
             return None
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+        
+    command = xsplit("head -n 8")
+    proc_head = sproc.Popen( command,
+                        stdin=proc_top.stdout,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
 
+    while True:
+        return_code = proc_head.poll()
+        if return_code is None:
+            continue
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+        
+    command = xsplit("tail -n 2")
+    proc_tail = sproc.Popen( command,
+                        stdin=proc_head.stdout,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc_head.poll()
+        if return_code is None:
+            continue
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
         else:
             logger.debug("Command %s ended with success" % command)
             break
     
-    return proc.stdout.readlines()[7].split()[-1]
+    
+    out = proc_tail.stdout.readlines()
+
+    if(len(out) == 2):
+        names = ["COMMAND", "KOMENDA"]        
+        index = -1        
+        for name in names:
+            index = out[0].find(name)
+            if index != -1 and len(out[1]) > index:
+                ret = out[1].strip()[index::]  
+    
+    return ret
 
 def get_kernel_version() ->str:
     command = xsplit("uname -r")
@@ -577,7 +623,62 @@ def get_hostname() ->str:
     return proc.stdout.readline().strip()
 
 def get_disk_usage(path: str) -> dict:
-    pass
+    ret = {
+        "total": 0,
+        "used": 0,
+        "free": 0,
+        "percent": 0,
+    }
+    
+    if os_exists(path):
+        out = psutil.disk_usage(path)
+        
+        ret["total"] = bytes2human(out.total)
+        ret["used"] = bytes2human(out.used)
+        ret["free"] = bytes2human(out.free)
+        ret["percent"] = out.percent
+        
+    return ret
+
+def get_disk_name(mountpoint: str) -> str:
+    ret = ""
+    
+    command = xsplit("lsblk -J  -o NAME,MOUNTPOINT,MODEL")
+    proc = sproc.Popen( command,
+                        stdin=sproc.PIPE,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return None
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+    
+    devices = json.load(proc.stdout)["blockdevices"]
+    
+    for device in devices:
+        if device["children"]:
+            for children in device["children"]:
+                if type(children) is dict:
+                    if children["mountpoint"] == mountpoint:
+                        ret = device["model"]
+                        break
+        
+        if ret != "":
+            break
+        
+    return ret
+                        
     
 def refresh_dashboard() -> dict:
     
@@ -603,6 +704,10 @@ def refresh_dashboard() -> dict:
     ret["cpu_usage"] = str(f"{psutil.cpu_percent(interval = 1)}%")
     
     ret["ram_usage"] = str(f"{psutil.virtual_memory().percent}%")
+    
+    ret["disk_usage"] = str(f"""{get_disk_usage("/")["percent"]}%""")
+    
+    ret["disk_name"] = get_disk_name("/")
     
     ret['kernel'] = get_kernel_version()
     
