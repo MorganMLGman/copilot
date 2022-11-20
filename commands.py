@@ -552,7 +552,7 @@ def get_first_proc_by_cpu() -> str:
             logger.debug("Command %s ended with success" % command)
             break
         
-    command = xsplit("tail -n 2")
+    command = xsplit("tail -n 1")
     proc_tail = sproc.Popen( command,
                         stdin=proc_head.stdout,
                         stdout=sproc.PIPE,
@@ -571,15 +571,16 @@ def get_first_proc_by_cpu() -> str:
             break
     
     
-    out = proc_tail.stdout.readlines()
-
-    if(len(out) == 2):
-        names = ["COMMAND", "KOMENDA"]        
-        index = -1        
-        for name in names:
-            index = out[0].find(name)
-            if index != -1 and len(out[1]) > index:
-                ret = out[1].strip()[index - 1::]  
+    out = proc_tail.stdout.readline().strip()
+        
+    if out and out != "":
+        index = len(out) - 1
+        
+        while not(out[index - 1].isnumeric() and out[index] == " "):
+            index -= 1
+            
+        ret = out[index + 1::]
+    
     
     return ret
 
