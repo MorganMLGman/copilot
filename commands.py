@@ -724,6 +724,8 @@ def refresh_dashboard() -> dict:
     
     ret["uptime"] = get_uptime(False)
     
+    ret["uptime_since"] = get_uptime(True)
+    
     ret["stress_app"] = get_first_proc_by_cpu()
     
     ret["public_ip"] = get_public_ip()
