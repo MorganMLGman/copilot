@@ -15,8 +15,7 @@ def main():
     
     parser.add_argument("--dash", help="Show basic server statistics", action="store_true")
     
-    subparsers = parser.add_subparsers()
-    
+    subparsers = parser.add_subparsers()    
     sub_cpu = subparsers.add_parser('cpu', help="Commands related to CPU")
     
     cpu_map = {
@@ -30,6 +29,8 @@ def main():
     
     sub_cpu.add_argument("command", choices=cpu_map, help=str(cpu_map))
     sub_cpu.add_argument("--percore", help="Show stats per core", action='store_true')
+    
+    
     
     args = parser.parse_args()
     

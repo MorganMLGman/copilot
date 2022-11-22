@@ -141,19 +141,15 @@ def get_swap_available() -> float:
     logger.debug("Available swap: %s GiB", ret)
     return ret
 
-def get_swap_stats() -> tuple[float, float, float, float]:
-    """get_swap_stats Function to get swap statistics
-
-    Returns:
-        tuple[float, float, float, float]: Swap statistics, [total, used, available, percent]
-    """
+def get_swap_stats() -> dict:
+    
+    ret = dict()
+    
     swap =      psutil.swap_memory()
-    total =     round(swap.total / (2 ** 30), 3)
-    used =      round(swap.used / (2 ** 30), 3)
-    available = round(swap.free / (2 ** 30), 3)
-    percent =   swap.percent
-
-    ret = (total, used, available, percent)
+    ret["total"] = bytes2human(swap.total)
+    ret["used"] = bytes2human(swap.used)
+    ret["free"] = bytes2human(swap.free)
+    ret["percent"] = swap.percent
 
     logger.debug("Swap stats: %s", ret)
 
@@ -713,6 +709,8 @@ def refresh_dashboard() -> dict:
     ret["cpu_usage"] = str(f"{psutil.cpu_percent(interval = 1)}%")
     
     ret["ram_usage"] = str(f"{psutil.virtual_memory().percent}%")
+    
+    ret["swap_usage"] = str(f"{psutil.swap_memory().percent}%")
     
     ret["disk_usage"] = str(f"""{get_disk_usage("/")["percent"]}%""")
     
