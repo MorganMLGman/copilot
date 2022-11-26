@@ -744,7 +744,7 @@ def refresh_dashboard() -> dict:
     
     ret["local_ip"] = get_local_ip()
     
-    ret["packages"] = get_installed_packages()
+    ret["packages"] = str(get_installed_packages())
     
     return ret
         
