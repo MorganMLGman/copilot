@@ -701,9 +701,6 @@ def get_installed_packages() -> int:
             ret = 0     
     return ret
     
-        
-        
-    
 def refresh_dashboard() -> dict:
     
     # CPU temp
