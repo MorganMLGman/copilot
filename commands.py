@@ -715,7 +715,7 @@ def refresh_dashboard() -> dict:
     ret = dict()
     
        
-    ret["cpu_temp"] =  "MILIUN" #str(f"""{get_cpu_temp(False)["core"]} 'C""")
+    ret["cpu_temp"] = str(f"""{get_cpu_temp(False)["core"]} 'C""")
     
     ret["cpu_usage"] = str(f"{psutil.cpu_percent(interval = 1)}%")
     
