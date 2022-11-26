@@ -688,7 +688,21 @@ def get_disk_name(mountpoint: str) -> str:
             break
         
     return ret
-                        
+
+def get_installed_packages() -> int:
+    ret = 0
+    
+    out = sproc.getoutput("dpkg -l | grep -c '^ii'")    
+    
+    if out != "":
+        try:
+            ret = int(out)
+        except:
+            ret = 0     
+    return ret
+    
+        
+        
     
 def refresh_dashboard() -> dict:
     
@@ -729,6 +743,8 @@ def refresh_dashboard() -> dict:
     ret["public_ip"] = get_public_ip()
     
     ret["local_ip"] = get_local_ip()
+    
+    ret["packages"] = get_installed_packages()
     
     return ret
         
