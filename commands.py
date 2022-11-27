@@ -414,19 +414,48 @@ def get_available_updates() -> list:
         logger.error("Update list not generated")
         return None
 
-def execute_system_reboot() -> None:
+def execute_system_reboot(password: str) -> bool:
     """execute_system_reboot Funtion to execute full system reboot
     """
-    confirmation = str(input("Are you shure that you want to reboot the server?\nType: \"yes\" or \"no\": "))
     
-    if confirmation is not None and confirmation.lower() == "yes":
-        logger.debug("Get ready for a reboot :)")
+    command_echo = xsplit(f"""echo "{password}" """)
+    proc = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = proc.poll()
         
-        command = xsplit("sudo reboot now")
-        # proc = sproc.run(command)
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+    
+    
+    command_reboot = xsplit("sudo -S reboot now")
+    proc = sproc.Popen( command_reboot,
+                        stdin=proc.stdout,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
         
-    else:
-        logger.debug("No reboot this time, just a warning :)")
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_reboot)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_reboot)
+            break
+    
+    return True
         
 def execute_system_shutdown() -> None:
     """execute_system_shutdown Function to execute full system shutdown
