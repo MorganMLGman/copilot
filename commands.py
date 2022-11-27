@@ -58,7 +58,8 @@ def get_uptime(since: bool) -> str:
 
     if since:
         ret = dt.datetime.fromtimestamp(boot_time).strftime("%d/%m/%Y %H:%M:%S")
-    ret = str(dt.timedelta(seconds=time() - boot_time)).split(".")[0]
+    else:
+        ret = str(dt.timedelta(seconds=time() - boot_time)).split(".")[0]
 
     logger.debug(ret)
     return ret
@@ -709,8 +710,11 @@ def refresh_dashboard() -> dict:
     # Kernel version
     # Hostname
     # Uptime
+    # Uptime since
+    # Stress app
     # Public IP
     # Local IP
+    # Packages
         
     ret = dict()
     
