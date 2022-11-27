@@ -351,17 +351,35 @@ def get_temp_by_sensor(sensor: str) -> list:
     return None        
     
 
-def get_available_updates() -> list:
+def get_available_updates(password: str) -> list:
     """get_available_updates Function to check available updates on server
 
     Returns:
         list: list containing available packets updates
     """
     ret = []
-    command = xsplit("sudo apt update")
-
+    
+    command_echo = xsplit(f"""echo "{password}" """)
+    echo_proc = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = echo_proc.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+    
+    command = xsplit("sudo -S apt update")
     proc = sproc.Popen( command,
-                        stdin=sproc.PIPE,
+                        stdin=echo_proc.stdout,
                         stdout=sproc.PIPE,
                         stderr=sproc.PIPE,
                         encoding="utf-8",)
@@ -381,9 +399,9 @@ def get_available_updates() -> list:
             break
 
 
-    command = xsplit("sudo apt list --upgradable")
+    command = xsplit("sudo -S apt list --upgradable")
     proc = sproc.Popen( command,
-                        stdin=sproc.PIPE,
+                        stdin=echo_proc.stdout,
                         stdout=sproc.PIPE,
                         stderr=sproc.PIPE,
                         encoding="utf-8",)

@@ -22,6 +22,10 @@ def main():
     sub_reboot = subparsers.add_parser("reboot", help="perform system reboot")
     sub_reboot.add_argument("password", help="sudo password, required for reboot command", type=str)
     
+    sub_update = subparsers.add_parser("update", help="System update")
+    sub_update.add_argument("action", help="check or perform", type=str)
+    sub_update.add_argument("password", help="sudo password, required for update command", type=str)
+    
     
     args = parser.parse_args()
     
@@ -35,7 +39,21 @@ def main():
             if args.password != "":
                 print(commands.execute_system_reboot(args.password))
             else:
-                print(False)  
+                print(False)
+        
+        elif command == "update":
+            if args.password != "":
+                if args.action != "":
+                    if args.action == "check":
+                        ret = dict()
+                        ret["updates"] = commands.get_available_updates(args.password)
+                        print(json.dumps(ret))
+                    else:
+                        print(False)
+                else:
+                    print(False)
+            else:
+                print(False)
 
 if __name__ == "__main__":
     main()
