@@ -472,7 +472,7 @@ def execute_available_updates(password: str) -> int:
             logger.debug("Command %s ended with success" % command)
             break
     
-    out = proc.stdout.readline().strip().split(" ")[0]
+    out = proc.stdout.readlines()[-1].strip().split(" ")[0]
     logger.debug("%s packages updated" % out)
     
     return out
