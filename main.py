@@ -48,6 +48,8 @@ def main():
                         ret = dict()
                         ret["updates"] = commands.get_available_updates(args.password)
                         print(json.dumps(ret))
+                    elif args.action == "run":
+                        print(commands.execute_available_updates(args.password))
                     else:
                         print(False)
                 else:

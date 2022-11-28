@@ -425,12 +425,57 @@ def get_available_updates(password: str) -> list:
         ret.append(line_split[0] + ": " + line_split[-1][0:-1:] + " -> " + line_split[1])
         
     if ret is not None:
-        logger.debug("Update list gennerated")
+        logger.debug("Update list generated")
         logger.debug("Update list: %s" % ret)
         return ret
     else:
         logger.error("Update list not generated")
         return None
+    
+def execute_available_updates(password: str) -> int:
+    command_echo = xsplit(f"""echo "{password}" """)
+    echo_proc = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = echo_proc.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return 0
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+        
+    command = xsplit("sudo -S apt upgrade -y")
+    proc = sproc.Popen( command,
+                        stdin=echo_proc.stdout,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
+
+        if return_code is None:
+            continue
+
+        if return_code == 1:
+            logger.error("Command %s not ended successfully" % command)
+            return 0
+
+        else:
+            logger.debug("Command %s ended with success" % command)
+            break
+    
+    out = proc.stdout.readline().strip().split(" ")[0]
+    logger.debug("%s packages updated" % out)
+    
+    return out
 
 def execute_system_reboot(password: str) -> bool:
     """execute_system_reboot Funtion to execute full system reboot
