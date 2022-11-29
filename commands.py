@@ -427,7 +427,6 @@ def get_available_updates(password: str) -> list:
     if ret is not None:
         logger.debug("Update list generated")
         logger.debug("Update list: %s" % ret)
-        ret = ["PAKIECIK DO AKTUALIZACJI", "PAKIECIK 2 DO AKTUALIZACJI", "PAKIECIK 3 DO AKTUALIZACJI",]
         return ret
     else:
         logger.error("Update list not generated")
