@@ -26,6 +26,10 @@ def main():
     sub_update.add_argument("action", help="check or perform", type=str)
     sub_update.add_argument("password", help="sudo password, required for update command", type=str)
     
+    sub_docker = subparsers.add_parser("docker", help="docker commands")
+    sub_docker.add_argument("docker_action", help="action to call", type=str)
+    sub_docker.add_argument("password", help="sudo password, required for docker command", type=str)
+    
     
     args = parser.parse_args()
     
@@ -56,6 +60,19 @@ def main():
                     print(False)
             else:
                 print(False)
+                
+        elif command == "docker":
+            if args.password != "":
+                if args.docker_action != "":
+                    if args.docker_action == "show":
+                        print(json.dumps(commands.get_docker_containers(args.password)))
+                    else:
+                        print(False)
+                else:
+                    print(False)
+            else:
+                print(False)
+            
 
 if __name__ == "__main__":
     main()
