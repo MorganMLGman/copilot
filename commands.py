@@ -794,7 +794,7 @@ def get_installed_packages() -> int:
             ret = 0     
     return ret
 
-def get_docker_containers(password: str) -> dict:
+def get_docker_containers(password: str) -> str:
     ret = dict()
     
     command_echo = xsplit(f"""echo "{password}" """)
@@ -857,7 +857,7 @@ def get_docker_containers(password: str) -> dict:
         "items": len(containers),
     }
     
-    return ret
+    return json.dumps(ret)
     
     
 def refresh_dashboard() -> dict:

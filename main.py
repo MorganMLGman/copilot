@@ -65,7 +65,7 @@ def main():
             if args.password != "":
                 if args.docker_action != "":
                     if args.docker_action == "show":
-                        print(json.dumps(commands.get_docker_containers(args.password)))
+                        print(commands.get_docker_containers(args.password))
                     else:
                         print(False)
                 else:
