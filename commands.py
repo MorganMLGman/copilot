@@ -849,7 +849,9 @@ def get_docker_containers(password: str) -> dict:
             "runtime": runtime,
         }
         containers.append(container)
-        
+    
+    containers = sorted(containers, key=lambda item: item["name"])    
+    
     ret = {
         "containers": containers,
         "items": len(containers),
