@@ -992,9 +992,72 @@ def execute_container_restart(password: str, container: str) -> bool:
     if output[0].strip().lower() == container.lower():
         return True
     
-    return False  
+    return False
+
+
+def get_container_stats(password: str, container: str) -> str:
+    command_echo = xsplit(f"""echo "{password}" """)
+    proc_echo = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
     
+    while True:
+        return_code = proc_echo.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+        
+    command_docker = xsplit(""" sudo -S docker stats --no-stream --format "{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}|{{.NetIO}}|{{.BlockIO}}" """)
+    proc_docker = sproc.Popen(command_docker,
+                       stdin=proc_echo.stdout,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
     
+    while True:
+        return_code = proc_docker.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_docker)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_docker)
+            break
+        
+    output = proc_docker.stdout.readlines()
+    
+    proper_line = ""
+        
+    for line in output:
+        if(line.find(container.lower()) != -1):
+            proper_line = line.strip()
+            break
+        
+    if proper_line == "":
+        return False
+    
+    proper_line = proper_line.split("|")
+    
+    stats  = {
+        "name": proper_line[0],
+        "cpu": proper_line[1],
+        "ram": proper_line[2],
+        "net_io": proper_line[3],
+        "disk_io": proper_line[4],
+    }
+    
+    ret = json.dumps(stats)
+    
+    return ret
+        
     
 def refresh_dashboard() -> dict:
     

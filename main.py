@@ -82,6 +82,11 @@ def main():
                             print(commands.execute_container_restart(args.password, args.container))
                         else:
                             print(False)
+                    elif args.docker_action == "stats":
+                        if args.container != "":
+                            print(commands.get_container_stats(args.password, args.container))
+                        else:
+                            print(False)
                     else:
                         print(False)
                 else:
