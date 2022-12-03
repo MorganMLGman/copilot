@@ -837,7 +837,7 @@ def get_docker_containers(password: str) -> str:
     
     containers = []
     
-    for i, line in enumerate(lines):
+    for line in lines:
         line = line.strip()
         items = line.split(" ")
         name = items[0]
@@ -858,6 +858,142 @@ def get_docker_containers(password: str) -> str:
     }
     
     return json.dumps(ret)
+
+
+def execute_container_start(password: str, container: str) -> bool:
+    command_echo = xsplit(f"""echo "{password}" """)
+    proc_echo = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = proc_echo.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+        
+    command_docker = xsplit(f"sudo -S docker start {container}")
+    proc_docker = sproc.Popen(command_docker,
+                       stdin=proc_echo.stdout,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = proc_docker.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_docker)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_docker)
+            break
+        
+    output = proc_docker.stdout.readlines()
+    
+    if output[0].strip().lower() == container.lower():
+        return True
+    
+    return False
+        
+    
+def execute_container_stop(password: str, container: str) -> bool:
+    command_echo = xsplit(f"""echo "{password}" """)
+    proc_echo = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = proc_echo.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+        
+    command_docker = xsplit(f"sudo -S docker stop {container}")
+    proc_docker = sproc.Popen(command_docker,
+                       stdin=proc_echo.stdout,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = proc_docker.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_docker)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_docker)
+            break
+        
+    output = proc_docker.stdout.readlines()
+    
+    if output[0].strip().lower() == container.lower():
+        return True
+    
+    return False
+
+
+def execute_container_restart(password: str, container: str) -> bool:
+    command_echo = xsplit(f"""echo "{password}" """)
+    proc_echo = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = proc_echo.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+        
+    command_docker = xsplit(f"sudo -S docker restart {container}")
+    proc_docker = sproc.Popen(command_docker,
+                       stdin=proc_echo.stdout,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
+    
+    while True:
+        return_code = proc_docker.poll()
+        
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_docker)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_docker)
+            break
+        
+    output = proc_docker.stdout.readlines()
+    
+    if output[0].strip().lower() == container.lower():
+        return True
+    
+    return False  
+    
     
     
 def refresh_dashboard() -> dict:

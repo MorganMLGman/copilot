@@ -28,8 +28,9 @@ def main():
     
     sub_docker = subparsers.add_parser("docker", help="docker commands")
     sub_docker.add_argument("docker_action", help="action to call", type=str)
+    sub_docker.add_argument("--container", help="Container to modify", type=str)
     sub_docker.add_argument("password", help="sudo password, required for docker command", type=str)
-    
+        
     
     args = parser.parse_args()
     
@@ -66,6 +67,21 @@ def main():
                 if args.docker_action != "":
                     if args.docker_action == "show":
                         print(commands.get_docker_containers(args.password))
+                    elif args.docker_action == "start":
+                        if args.container != "":
+                            print(commands.execute_container_start(args.password, args.container))
+                        else:
+                            print(False)
+                    elif args.docker_action == "stop":
+                        if args.container != "":
+                            print(commands.execute_container_stop(args.password, args.container))
+                        else:
+                            print(False)
+                    elif args.docker_action == "restart":
+                        if args.container != "":
+                            print(commands.execute_container_restart(args.password, args.container))
+                        else:
+                            print(False)
                     else:
                         print(False)
                 else:
