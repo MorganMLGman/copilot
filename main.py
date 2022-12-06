@@ -22,6 +22,9 @@ def main():
     sub_reboot = subparsers.add_parser("reboot", help="perform system reboot")
     sub_reboot.add_argument("password", help="sudo password, required for reboot command", type=str)
     
+    sub_shutdown = subparsers.add_parser("shutdown", help="perform system reboot")
+    sub_shutdown.add_argument("password", help="sudo password, required for shutdown command", type=str)
+    
     sub_update = subparsers.add_parser("update", help="System update")
     sub_update.add_argument("action", help="check or perform", type=str)
     sub_update.add_argument("password", help="sudo password, required for update command", type=str)
@@ -43,6 +46,12 @@ def main():
         if command == "reboot":
             if args.password != "":
                 print(commands.execute_system_reboot(args.password))
+            else:
+                print(False)
+                
+        elif command == "shutdown":
+            if args.password != "":
+                print(commands.execute_system_shutdown(args.password))
             else:
                 print(False)
         

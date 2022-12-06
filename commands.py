@@ -520,19 +520,47 @@ def execute_system_reboot(password: str) -> bool:
     
     return True
         
-def execute_system_shutdown() -> None:
+def execute_system_shutdown(password: str) -> None:
     """execute_system_shutdown Function to execute full system shutdown
     """
-    confirmation = str(input("Are you shure that you want to shutdown the server?\nType: \"yes\" or \"no\": "))
+    command_echo = xsplit(f"""echo "{password}" """)
+    proc = sproc.Popen(command_echo,
+                       stdin=sproc.PIPE,
+                       stdout=sproc.PIPE,
+                       stderr=sproc.PIPE,
+                       encoding="utf-8")
     
-    if confirmation is not None and confirmation.lower() == "yes":
-        logger.debug("Get ready for a shutdown :)")
+    while True:
+        return_code = proc.poll()
         
-        command = xsplit("sudo shutdown now")
-        # proc = sproc.run(command)
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_echo)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_echo)
+            break
+    
+    
+    command_shutdown = xsplit("sudo -S shutdown now")
+    proc = sproc.Popen( command_shutdown,
+                        stdin=proc.stdout,
+                        stdout=sproc.PIPE,
+                        stderr=sproc.PIPE,
+                        encoding="utf-8",)
+
+    while True:
+        return_code = proc.poll()
         
-    else:
-        logger.debug("No shutdown this time, just a warning :)")
+        if return_code is None: continue
+        elif return_code == 1:
+            logger.error("Command %s not ended successfully" % command_shutdown)
+            return False
+        else:
+            logger.debug("Command %s ended with success" % command_shutdown)
+            break
+    
+    return True
     
 def get_public_ip() -> str:
     """get_public_ip Function to get public IP
