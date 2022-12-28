@@ -266,11 +266,20 @@ def get_cpu_temp(percore: bool = False) -> dict:
     package_temp = []
     core_temp = []
     out = psutil.sensors_temperatures()    
-    keys = out.keys()
+    keys = []#out.keys()
+    
+    if len(keys) < 1:
+        return ret
+    
+    is_valid_key = False
     
     for key in keys:
         if (key.lower().find("cpu") != -1) or (key.lower().find("core") != -1) or (key.lower().find("cpu_thermal") != -1):
+            is_valid_key = True
             break
+    
+    if not is_valid_key:
+        return ret
 
     for sensor in out[key]:
         if sensor.label.lower().find("package") != -1:
@@ -1101,10 +1110,12 @@ def refresh_dashboard() -> dict:
     # Local IP
     # Packages
         
-    ret = dict()
-    
+    ret = dict()    
        
-    ret["cpu_temp"] = str(f"""{get_cpu_temp(False)["core"]} 'C""")
+    try:
+        ret["cpu_temp"] = str(f"""{get_cpu_temp(False)["core"]} 'C""")
+    except KeyError:
+        pass
     
     ret["cpu_usage"] = str(f"{psutil.cpu_percent(interval = 1)}%")
     
