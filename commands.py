@@ -266,7 +266,7 @@ def get_cpu_temp(percore: bool = False) -> dict:
     package_temp = []
     core_temp = []
     out = psutil.sensors_temperatures()    
-    keys = []#out.keys()
+    keys = out.keys()
     
     if len(keys) < 1:
         return ret
