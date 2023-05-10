@@ -274,7 +274,7 @@ def get_cpu_temp(percore: bool = False) -> dict:
     is_valid_key = False
     
     for key in keys:
-        if (key.lower().find("cpu") != -1) or (key.lower().find("core") != -1) or (key.lower().find("cpu_thermal") != -1):
+        if (key.lower().find("cpu") != -1) or (key.lower().find("core") != -1) or (key.lower().find("cpu_thermal") != -1) or (key.lower().find("k10temp") != -1) :
             is_valid_key = True
             break
     
@@ -286,6 +286,9 @@ def get_cpu_temp(percore: bool = False) -> dict:
             package_temp.append(round(sensor.current, 1))
         
         elif sensor.label.lower().find("core") != -1:
+            core_temp.append(round(sensor.current, 1))
+
+        elif sensor.label.lower().find("k10temp") != -1:
             core_temp.append(round(sensor.current, 1))
             
 
